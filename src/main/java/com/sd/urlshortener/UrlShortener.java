@@ -2,6 +2,8 @@ package com.sd.urlshortener;
 
 import java.util.HashMap;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.view.RedirectView;
 public class UrlShortener {
 
     int counter = 0;
+
     HashMap<String, String> longUrls = new HashMap<String, String>();
 
     public String base62_encode(Integer i){
@@ -33,19 +36,23 @@ public class UrlShortener {
     }
 
     @PostMapping("/register")
-    public JSONObject createShortUrl(@RequestBody String obj) throws ParseException {
+    public JSONObject createShortUrl(@RequestBody String obj, HttpServletRequest request) throws ParseException {
         JSONObject output = new JSONObject();
 
         String shortUrl = base62_encode(++counter);
+
         JSONParser parser = new JSONParser();
-   
         JSONObject json = (JSONObject) parser.parse(obj);
+        
         longUrls.put(shortUrl, json.get("url").toString());
         System.out.println(json);
-
-        output.put("shortUrl", "http://localhost:8080/" + shortUrl);
-
+        System.out.println(longUrls);
+        
+        //PROSIRITI DA SE SPREMI I redirectType ako posotji, ako ne postoji iskoristiti default 302
+        String outputUrl = request.getRequestURL().subSequence(0, request.getRequestURL().length() - 8) + shortUrl;
+        output.put("shortUrl", outputUrl);
         System.out.print(output);
+
         return output;
     }
 
@@ -56,7 +63,7 @@ public class UrlShortener {
         RedirectView redirectView = new RedirectView();
 
         if (longUrl != null) {
-            redirectView.setStatusCode(HttpStatus.MOVED_PERMANENTLY);
+            redirectView.setStatusCode(HttpStatus.MOVED_TEMPORARILY);
         } else {
             longUrl = "/";
             redirectView.setStatusCode(HttpStatus.NOT_FOUND);

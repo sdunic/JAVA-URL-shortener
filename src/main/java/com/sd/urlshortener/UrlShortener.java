@@ -24,6 +24,7 @@ public class UrlShortener {
 
     HashMap<String, ShortURL> urls = new HashMap<String, ShortURL>();
 
+
     @PostMapping("/register")
     public JSONObject createShortUrl(@RequestBody String obj, HttpServletRequest request) throws ParseException {
         JSONObject output = new JSONObject();
@@ -32,19 +33,15 @@ public class UrlShortener {
         JSONObject json = (JSONObject) parser.parse(obj);
 
         ShortURL s = new ShortURL(json.get("url").toString(), ++counter);
-
         if(json.get("redirectType") != null) {
             s.redirectType = json.get("redirectType").toString();
         }
-        
         urls.put(s.shortUrl, s);
 
-        System.out.println(json);
         System.out.println(urls);
         
         String outputUrl = request.getRequestURL().subSequence(0, request.getRequestURL().length() - 8) + s.shortUrl;
         output.put("shortUrl", outputUrl);
-        System.out.print(output);
 
         return output;
     }

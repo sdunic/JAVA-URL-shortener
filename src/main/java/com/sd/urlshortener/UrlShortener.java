@@ -22,7 +22,7 @@ public class UrlShortener {
 
     int counter = 0;
 
-    HashMap<String, String> longUrls = new HashMap<String, String>();
+    HashMap<String, ShortURL> urls = new HashMap<String, ShortURL>();
 
     public String base62_encode(Integer i){
         String[]  s = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
@@ -43,12 +43,18 @@ public class UrlShortener {
 
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(obj);
+
+        ShortURL s = new ShortURL(json.get("url").toString());
+
+        if(json.get("redirectType") != null) {
+            s.redirectType = json.get("redirectType").toString();
+        }
         
-        longUrls.put(shortUrl, json.get("url").toString());
+        urls.put(shortUrl, s);
+
         System.out.println(json);
-        System.out.println(longUrls);
+        System.out.println(urls);
         
-        //PROSIRITI DA SE SPREMI I redirectType ako posotji, ako ne postoji iskoristiti default 302
         String outputUrl = request.getRequestURL().subSequence(0, request.getRequestURL().length() - 8) + shortUrl;
         output.put("shortUrl", outputUrl);
         System.out.print(output);
@@ -58,14 +64,18 @@ public class UrlShortener {
 
     @GetMapping("/{id}")
     public RedirectView redirectToLongUrl(@PathVariable String id) {
-
-        String longUrl = longUrls.get(id);
         RedirectView redirectView = new RedirectView();
+        String longUrl = "/";
+        ShortURL s = urls.get(id);
+        if(s != null) {
+            longUrl = s.longUrl;
+            if(s.redirectType.equals("301"))
+                redirectView.setStatusCode(HttpStatus.MOVED_PERMANENTLY);
+            else
+                redirectView.setStatusCode(HttpStatus.MOVED_TEMPORARILY);
 
-        if (longUrl != null) {
-            redirectView.setStatusCode(HttpStatus.MOVED_TEMPORARILY);
-        } else {
-            longUrl = "/";
+        }
+        else {
             redirectView.setStatusCode(HttpStatus.NOT_FOUND);
         }
         redirectView.setUrl(longUrl);

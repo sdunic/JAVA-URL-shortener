@@ -79,12 +79,12 @@ public class UrlShortener {
             
             System.out.println(urls);
             response.setStatus(200);
-            return output;
         }
         else {
             response.setStatus(401);
-            return output;
         }
+
+        return output;
     }
 
     @GetMapping("/{id}")
@@ -109,5 +109,24 @@ public class UrlShortener {
         }
         redirectView.setUrl(longUrl);
         return redirectView;
+    }
+
+    @GetMapping("statistic/{AccountId}")
+    public JSONObject getAccountStatistics(@RequestHeader String Authorization, @PathVariable String AccountId, HttpServletResponse response) {
+        JSONObject output = new JSONObject();
+   
+        String authorizationCode = Authorization.split(" ")[1];
+        String accountId = authorizationCodes.get(authorizationCode);
+        Account account = accounts.get(accountId);
+
+        if(account != null) {
+            output.putAll(account.urlStatistics);
+            response.setStatus(200);
+        }
+        else {
+            response.setStatus(401);
+        }
+
+        return output;        
     }
 }

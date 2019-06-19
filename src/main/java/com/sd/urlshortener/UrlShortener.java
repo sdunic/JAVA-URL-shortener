@@ -6,7 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +31,9 @@ public class UrlShortener {
 
     @PostMapping("/account")
     public JSONObject createAccount(@RequestBody JSONObject json, HttpServletResponse response) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+
         JSONObject output = new JSONObject();
 
         if(accounts.get(json.get("AccountId")) == null)
@@ -48,16 +53,18 @@ public class UrlShortener {
             output.put("description", "Account already exists");
             response.setStatus(200);  
         }
-        
+
+        response.setContentType("application/json");
         System.out.println(accounts);
         return output;
     }
 
     @PostMapping("/register")
     public JSONObject createShortUrl(@RequestHeader String Authorization, @RequestBody JSONObject json, HttpServletRequest request, HttpServletResponse response) {
-        JSONObject output = new JSONObject();
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
 
-        //u slučaju uspješen registracije trebamo vratiti status 200, a u protivnom vraćamo 401
+        JSONObject output = new JSONObject();
 
         String authorizationCode = Authorization.split(" ")[1];
         String accountId = authorizationCodes.get(authorizationCode);
@@ -84,7 +91,31 @@ public class UrlShortener {
             response.setStatus(401);
         }
 
+        response.setContentType("application/json");
         return output;
+    }
+
+    @GetMapping("statistic/{AccountId}")
+    public JSONObject getAccountStatistics(@RequestHeader String Authorization, @PathVariable String AccountId, HttpServletResponse response) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+
+        JSONObject output = new JSONObject();
+   
+        String authorizationCode = Authorization.split(" ")[1];
+        String accountId = authorizationCodes.get(authorizationCode);
+        Account account = accounts.get(accountId);
+
+        if(account != null) {
+            output.putAll(account.urlStatistics);
+            response.setStatus(200);
+        }
+        else {
+            response.setStatus(401);
+        }
+
+        response.setContentType("application/json");
+        return output;        
     }
 
     @GetMapping("/{id}")
@@ -109,24 +140,5 @@ public class UrlShortener {
         }
         redirectView.setUrl(longUrl);
         return redirectView;
-    }
-
-    @GetMapping("statistic/{AccountId}")
-    public JSONObject getAccountStatistics(@RequestHeader String Authorization, @PathVariable String AccountId, HttpServletResponse response) {
-        JSONObject output = new JSONObject();
-   
-        String authorizationCode = Authorization.split(" ")[1];
-        String accountId = authorizationCodes.get(authorizationCode);
-        Account account = accounts.get(accountId);
-
-        if(account != null) {
-            output.putAll(account.urlStatistics);
-            response.setStatus(200);
-        }
-        else {
-            response.setStatus(401);
-        }
-
-        return output;        
     }
 }

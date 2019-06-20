@@ -1,10 +1,12 @@
 package com.sd.urlshortener;
 
+import java.util.Base64;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,34 +28,38 @@ public class UrlShortener {
 
     HashMap<String, ShortURL> urls = new HashMap<String, ShortURL>();
     HashMap<String, Account> accounts = new HashMap<String, Account>();
-    HashMap<String, String> authorizationCodes = new HashMap<String, String>();
 
+    private String decodeAuthorization(String authorizationCode){
+        String usernamePassword;
+
+        byte[] decodedBytes = Base64.getDecoder().decode(authorizationCode);
+        usernamePassword = new String(decodedBytes);
+
+        System.out.println(usernamePassword);
+        return usernamePassword;
+    }
 
     @PostMapping("/account")
     public JSONObject createAccount(@RequestBody JSONObject json, HttpServletResponse response) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-
         JSONObject output = new JSONObject();
 
         if(accounts.get(json.get("AccountId")) == null)
         {
             Account account = new Account(json.get("AccountId").toString());
             accounts.put(account.accountId, account);
-            authorizationCodes.put(account.getAuthorization(), account.accountId);
 
             output.put("success", true);
             output.put("description", "Your account is opened");
             output.put("password", account.password);
-            response.setStatus(200);
         } 
         else 
         {
             output.put("success", false);
             output.put("description", "Account already exists");
-            response.setStatus(200);  
         }
 
+        
+        response.setStatus(200);  
         response.setContentType("application/json");
         System.out.println(accounts);
         return output;
@@ -61,19 +67,17 @@ public class UrlShortener {
 
     @PostMapping("/register")
     public JSONObject createShortUrl(@RequestHeader String Authorization, @RequestBody JSONObject json, HttpServletRequest request, HttpServletResponse response) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-
         JSONObject output = new JSONObject();
 
         String authorizationCode = Authorization.split(" ")[1];
-        String accountId = authorizationCodes.get(authorizationCode);
-        Account account = accounts.get(accountId);
+        String usernamePassword = decodeAuthorization(authorizationCode);
+        Account account = accounts.get(usernamePassword.split(":")[0]);
 
-        if(account != null) {
+
+        if(account != null && account.password.equals(usernamePassword.split(":")[1])) {
             String longUrl = json.get("url").toString();
 
-            ShortURL s = new ShortURL(longUrl, accountId, ++counter);
+            ShortURL s = new ShortURL(longUrl, account.accountId, ++counter);
             account.addUrl(longUrl);
 
             if(json.get("redirectType") != null) {
@@ -97,17 +101,16 @@ public class UrlShortener {
 
     @GetMapping("statistic/{AccountId}")
     public JSONObject getAccountStatistics(@RequestHeader String Authorization, @PathVariable String AccountId, HttpServletResponse response) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-
         JSONObject output = new JSONObject();
    
         String authorizationCode = Authorization.split(" ")[1];
-        String accountId = authorizationCodes.get(authorizationCode);
-        Account account = accounts.get(accountId);
+        String usernamePassword = decodeAuthorization(authorizationCode);
+        Account account = accounts.get(usernamePassword.split(":")[0]);
 
-        if(account != null) {
+        if(account != null && account.password.equals(usernamePassword.split(":")[1])) {
             output.putAll(account.urlStatistics);
+
+            System.out.println(account.urlStatistics);
             response.setStatus(200);
         }
         else {

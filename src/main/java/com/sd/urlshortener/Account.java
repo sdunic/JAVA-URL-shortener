@@ -1,7 +1,6 @@
 package com.sd.urlshortener;
 
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
 
 public class Account {
@@ -38,13 +37,6 @@ public class Account {
 
     public String getStatistics() {
         return this.urlStatistics.toString();
-    }
-
-    public String getAuthorization() {
-        String originalInput = accountId + ":" + password;
-        String encodedString = Base64.getEncoder().encodeToString(originalInput.getBytes());
-        
-        return encodedString;
     }
 
     public String toString() { 

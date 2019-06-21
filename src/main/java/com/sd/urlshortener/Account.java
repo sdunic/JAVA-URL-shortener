@@ -14,12 +14,12 @@ public class Account {
         this.password = generateRandomPassword();
     }
 
-    public String generateRandomPassword(){
+    public String generateRandomPassword() {
         final String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         SecureRandom random = new SecureRandom();
-        
-        String result="";
-        for(int i = 0; i<8; i++){
+
+        String result = "";
+        for (int i = 0; i < 8; i++) {
             int index = random.nextInt(characters.length());
             result += characters.charAt(index);
         }
@@ -39,7 +39,7 @@ public class Account {
         return this.urlStatistics.toString();
     }
 
-    public String toString() { 
+    public String toString() {
         return "accountId: " + this.accountId + ", password: " + this.password + ", statistics: " + this.urlStatistics;
-    } 
-}  
+    }
+}

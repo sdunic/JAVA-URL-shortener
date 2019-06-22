@@ -233,6 +233,23 @@
   <h4 class="api-url" th:text="${baseUrl} + '{id}'" />
   <div class="monospace">
     <p><strong>GET</strong> - API za redirekt klijenta na kofiguriranu adresu sa konfiguriranim http statusom</p>
+    <table>
+      <tr>
+        <td colspan="2">
+          301<span class="comment">Moved Permanently</span>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          302<span class="comment">Moved Temporarely</span>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          404<span class="comment">Not Found</span>
+        </td>
+      </tr>
+    </table>
   </div>
 
 </body>

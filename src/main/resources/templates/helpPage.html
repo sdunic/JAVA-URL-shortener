@@ -1,0 +1,240 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>URL Shortener - API dokumentacija</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<style>
+  body {
+    background-color: #eee;
+    font-family: sans-serif;
+    padding: 50px;
+  }
+
+  h4 {
+    color: #999;
+  }
+
+  p {
+    margin-top: -10px;
+  }
+
+  div {
+    margin-top: -10px;
+    margin-bottom: 50px;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  td {
+    padding: 20px;
+    border-top: 1px #999 dashed;
+  }
+
+  td:first-child {
+    vertical-align: top;
+    padding-right: 40px;
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+
+  .monospace {
+    font-family: monospace;
+    font-size: 1.2em;
+  }
+
+  .api-url {
+    color: #42a5f5;
+    margin-bottom: 25px;
+  }
+
+  .key {
+    padding-left: 25px;
+    color: #2468ce;
+  }
+
+  .value {
+    color: #079107;
+  }
+
+  .comment {
+    padding-left: 20px;
+    color: #929292;
+    font-style: italic;
+  }
+</style>
+
+<body>
+
+  <h1>URL Shortener - API dokumentacija</h1>
+  <p class="monospace" th:text="'[ URL: ' + ${baseUrl} + ' ]'" />
+  <br />
+  <h3>
+    Konfiguracijske upute za "Shortener" servis
+  </h3>
+
+  <h4 class="api-url" th:text="${baseUrl} + 'account'" />
+  <div class="monospace">
+    <p><strong>POST</strong> - API za otvaranje korisničkog računa</p>
+    <h4>Request headers</h4>
+    <p>Content-Type: application/json</p>
+
+    <h4>Request body</h4>
+    <p>
+      {<br />
+      <span class="key">"AccountId"</span>:
+      <span class="value">"string"</span>
+      <span class="comment">/* obavezno polje */</span>
+      <br />}
+    </p>
+
+    <h4>Responses</h4>
+    <p>Content-Type: application/json</p>
+    <table>
+      <tr>
+        <td>
+          200<span class="comment">OK</span>
+        </td>
+        <td>
+          {<br />
+          <span class="key">"password"</span>:
+          <span class="value">"string"</span>,
+          <span class="comment">/* Automatski generirana lozinka duljine 8 alfanumeričkih znakova */</span>
+          <br />
+          <span class="key">"success"</span>:
+          <span class="value">"boolen"</span>,
+          <span class="comment">/* true */</span>
+          <br />
+          <span class="key">"description"</span>:
+          <span class="value">"Yout account is opened"</span>
+          <span class="comment">/* string */</span>
+          <br />}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          200<span class="comment">OK</span>
+        </td>
+        <td>
+          {<br />
+          <span class="key">"success"</span>:
+          <span class="value">"boolen"</span>,
+          <span class="comment">/* false */</span>
+          <br />
+          <span class="key">"description"</span>:
+          <span class="value">"Account already exists"</span>
+          <span class="comment">/* string */</span>
+          <br />}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          415<span class="comment">Unsupported Media Type</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <h4 class="api-url" th:text="${baseUrl} + 'register'" />
+  <div class="monospace">
+    <p><strong>POST</strong> - API za registraciju URL-ova u "Shortener" servis</p>
+    <h4>Request headers</h4>
+    <p>Content-Type: application/json</p>
+    <p>Authorization: Basic</p>
+
+    <h4>Request body</h4>
+    <p>
+      {<br />
+      <span class="key">"url"</span>:
+      <span class="value">"string"</span>,
+      <span class="comment">/* obavezno polje, url koji treba skratiti */</span>
+      <br />
+      <span class="key">"redirectType"</span>:
+      <span class="value">"int"</span>
+      <span class="comment">/* 301 | 302 (nije obavezan, default 302) */</span>
+      <br />}
+    </p>
+
+    <h4>Responses</h4>
+    <p>Content-Type: application/json</p>
+    <table>
+      <tr>
+        <td>
+          200<span class="comment">OK</span>
+        </td>
+        <td>
+          {<br />
+          <span class="key">"shortUrl"</span>:
+          <span class="value">"string"</span>
+          <span class="comment">/* automatski generiran skraćeni URL */</span>
+          <br />}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          401<span class="comment">Unauthorized</span>
+        </td>
+        <td>
+          { }
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          415<span class="comment">Unsupported Media Type</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <h4 class="api-url" th:text="${baseUrl} + 'statistic/{AccountId}'" />
+  <div class="monospace">
+    <p><strong>GET</strong> - API za dohvat statistike posjećenosti po URL-ovima za korisnika</p>
+    <h4>Request headers</h4>
+    <p>Authorization: Basic</p>
+
+    <h4>Responses</h4>
+    <p>Content-Type: application/json</p>
+    <table>
+      <tr>
+        <td>
+          200<span class="comment">OK</span>
+        </td>
+        <td>
+          {<br />
+          <span class="key">"http://short.com/ab10cd"</span>:
+          <span class="value">10</span>,
+          <br />
+          <span class="key">"http://short.com/hX1Zse"</span>:
+          <span class="value">6</span>
+          <br />
+          <span class="key">...</span>
+          <br />}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          401<span class="comment">Unauthorized</span>
+        </td>
+        <td>
+          { }
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <br /><br />
+
+  <h3>
+    Korisničke upute za "Shortener" servis
+  </h3>
+  <h4 class="api-url" th:text="${baseUrl} + '{id}'" />
+  <div class="monospace">
+    <p><strong>GET</strong> - API za redirekt klijenta na kofiguriranu adresu sa konfiguriranim http statusom</p>
+  </div>
+
+</body>
+
+</html>

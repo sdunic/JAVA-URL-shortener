@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
+import org.apache.commons.validator.routines.UrlValidator;
 
 @RestController
 public class UrlShortenerController {
@@ -32,6 +32,11 @@ public class UrlShortenerController {
 
         System.out.println(usernamePassword);
         return usernamePassword;
+    }
+
+    private boolean urlIsValid(String url) {
+        UrlValidator v = new UrlValidator();
+        return v.isValid(url);
     }
 
     @PostMapping(value = "/account", consumes = "application/json", produces = "application/json")
@@ -66,6 +71,15 @@ public class UrlShortenerController {
 
         if (account != null && account.password.equals(usernamePassword.split(":")[1])) {
             String longUrl = json.get("url").toString();
+
+            if(!urlIsValid(longUrl)) {
+                longUrl = "http://" + longUrl;
+                if(!urlIsValid(longUrl)){
+                    response.setStatus(400);
+                    output.put("error", "Invalid URL");
+                    return output;
+                }
+            }
 
             ShortURL s = new ShortURL(longUrl, account.accountId, ++counter);
             account.addUrl(longUrl);
